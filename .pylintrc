@@ -1,0 +1,9 @@
+[MAIN]
+ignore = .venv,tests
+
+[FORMAT]
+max-line-length = 120
+
+[MESSAGES CONTROL]
+# Aucune règle désactivée : le but de l'expérimentation est de voir
+# tout ce que Pylint détecte sur du code écrit sans outil de qualité.

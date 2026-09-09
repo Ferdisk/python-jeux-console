@@ -1,0 +1,5 @@
+[flake8]
+# Même longueur de ligne que les autres outils, pour que la comparaison
+# porte sur les règles et non sur un réglage différent.
+max-line-length = 120
+exclude = .venv,.git,__pycache__,tests

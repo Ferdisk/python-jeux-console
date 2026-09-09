@@ -1,0 +1,6 @@
+# Ruff — analyseur statique et formateur écrit en Rust.
+# Configuration volontairement minimale : on veut observer ce que l'outil
+# signale par défaut pour le comparer à Pylint et Flake8.
+line-length = 120
+target-version = "py311"
+exclude = [".venv", "tests"]

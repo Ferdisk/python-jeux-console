@@ -28,7 +28,7 @@ jobs:
         run: apt-get update -qq && apt-get install -y -qq git
 
       - name: Récupérer le code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Installer les dépendances de développement
         run: pip install --no-cache-dir -q -r requirements-dev.txt
@@ -55,7 +55,39 @@ jobs:
 
       - name: Conserver le rapport de couverture
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: rapport-couverture
           path: coverage.xml
+
+  qualite:
+    name: Analyse statique et style
+    runs-on: ubuntu-latest
+    container: python:3.11-slim
+
+    steps:
+      - name: Installer git dans le conteneur
+        run: apt-get update -qq && apt-get install -y -qq git
+
+      - name: Récupérer le code
+        uses: actions/checkout@v7
+
+      - name: Installer les outils de qualité
+        run: pip install --no-cache-dir -q -r requirements-dev.txt
+
+      # Seule étape bloquante de ce job : les erreurs qui empêchent réellement
+      # le programme de fonctionner (variable non définie, comparaison
+      # impossible, except mal formé). Le style, lui, ne doit pas arrêter la
+      # chaîne : on veut le mesurer, pas s'y heurter.
+      - name: Erreurs réelles (bloquant)
+        run: ruff check --select E9,F63,F7,F82 --output-format=concise .
+
+      # Le comparatif chiffré des quatre analyseurs, publié dans le résumé
+      # d'exécution. C'est la matière du rapport d'expérimentation.
+      - name: Comparatif Ruff / Flake8 / Pylint / Black
+        if: always()
+        run: bash .github/scripts/comparatif-analyseurs.sh
+
+      - name: Détail des remarques Pylint
+        if: always()
+        run: pylint --output-format=colorized --exit-zero Allu.py devinette.py morpion.py Menu.py Principal.py GestionScore.py Existe.py
