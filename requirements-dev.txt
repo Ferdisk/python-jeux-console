@@ -3,3 +3,6 @@
 
 # Tests unitaires
 pytest==8.3.4
+
+# Couverture de code
+pytest-cov==6.0.0

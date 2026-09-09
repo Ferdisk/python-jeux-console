@@ -38,5 +38,24 @@ jobs:
       - name: Vérifier que tout le code compile
         run: python -m compileall -q .
 
-      - name: Lancer les tests
-        run: pytest
+      # La couverture indique quelle part du code est effectivement exercée
+      # par les tests. Le rapport XML sert ensuite à l'analyse SonarQube.
+      - name: Lancer les tests et mesurer la couverture
+        run: pytest --cov=. --cov-report=term-missing --cov-report=xml
+
+      - name: Publier la couverture dans le résumé d'exécution
+        if: always()
+        run: |
+          {
+            echo "## Couverture de code"
+            echo '```'
+            coverage report
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Conserver le rapport de couverture
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapport-couverture
+          path: coverage.xml

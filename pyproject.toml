@@ -4,3 +4,10 @@
 pythonpath = ["."]
 testpaths = ["tests"]
 addopts = "-v"
+
+[tool.coverage.run]
+# On mesure le code du projet, pas les tests eux-mêmes ni l'environnement virtuel.
+omit = ["tests/*", ".venv/*"]
+
+[tool.coverage.report]
+show_missing = true
