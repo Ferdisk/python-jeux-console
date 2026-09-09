@@ -1,0 +1,51 @@
+# Livraison continue (le « CD » de la chaîne).
+#
+# Dès qu'un tag de version est poussé, une archive du code est construite
+# et publiée comme Release GitHub, téléchargeable sans passer par git.
+#
+# Le déclenchement manuel (workflow_dispatch) permet de produire la release
+# d'un tag déjà existant — utile ici, les tags v1.01 et v1.02 ayant été
+# posés avant l'écriture de ce fichier.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag à publier (ex. v1.01)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  publier:
+    name: Construire et publier l'archive
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code du tag
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - name: Déterminer la version
+        id: version
+        run: echo "tag=${{ inputs.tag || github.ref_name }}" >> "$GITHUB_OUTPUT"
+
+      - name: Construire l'archive
+        run: |
+          mkdir -p dist
+          zip -j "dist/jeux-console-${{ steps.version.outputs.tag }}.zip" \
+              Principal.py Menu.py Allu.py devinette.py morpion.py GestionScore.py Existe.py README.md
+
+      - name: Publier la Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          files: dist/*.zip
+          generate_release_notes: true

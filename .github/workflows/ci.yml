@@ -141,3 +141,22 @@ jobs:
             cat audit.txt 2>/dev/null || echo "audit interrompu"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+  conteneur:
+    name: Image Docker
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v7
+
+      - name: Construire l'image
+        run: docker build -t jeux-console:${{ github.sha }} .
+
+      # Vérification minimale mais réelle : l'image démarre et tous les
+      # modules du projet se chargent. Le jeu lui-même est interactif et
+      # ne peut pas être joué dans un pipeline.
+      - name: Vérifier que l'image démarre
+        run: |
+          docker run --rm jeux-console:${{ github.sha }} \
+            python -c "import Menu, GestionScore, morpion, devinette, Allu, Existe; print('modules charges')"
