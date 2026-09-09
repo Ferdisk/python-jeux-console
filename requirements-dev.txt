@@ -2,7 +2,7 @@
 # Chaque outil est commenté avec l'étape du cours à laquelle il répond.
 
 # Tests unitaires
-pytest==8.3.4
+pytest==9.1.1
 
 # Couverture de code
 pytest-cov==6.0.0
