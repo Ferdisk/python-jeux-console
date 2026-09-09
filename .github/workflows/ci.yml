@@ -1,0 +1,42 @@
+# Chaîne d'intégration continue du projet.
+#
+# Le cours R5.A.07 demande que le pipeline s'exécute sur un « runner Docker »,
+# c'est-à-dire dans un conteneur isolé plutôt que directement sur la machine
+# hôte. GitHub Actions permet cela avec la clé `container:` : le job entier
+# tourne alors dans l'image indiquée, ce qui garantit un environnement
+# identique à chaque exécution.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  tests:
+    name: Tests unitaires
+    runs-on: ubuntu-latest
+    # L'exigence « runner Docker » du cours : tout le job s'exécute ici.
+    container: python:3.11-slim
+
+    steps:
+      # L'image slim est volontairement minimale et ne contient pas git ;
+      # actions/checkout en a besoin pour récupérer le dépôt proprement.
+      - name: Installer git dans le conteneur
+        run: apt-get update -qq && apt-get install -y -qq git
+
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer les dépendances de développement
+        run: pip install --no-cache-dir -q -r requirements-dev.txt
+
+      # Première barrière : le code doit au moins être syntaxiquement valide.
+      # Inutile de lancer les tests si un fichier ne compile pas.
+      - name: Vérifier que tout le code compile
+        run: python -m compileall -q .
+
+      - name: Lancer les tests
+        run: pytest

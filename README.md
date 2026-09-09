@@ -1,5 +1,7 @@
 # Jeux console en Python — Allumettes, Devinette, Morpion
 
+[![CI](https://github.com/Ferdisk/python-jeux-console/actions/workflows/ci.yml/badge.svg)](https://github.com/Ferdisk/python-jeux-console/actions/workflows/ci.yml)
+
 Trois jeux en ligne de commande, jouables à deux ou contre la machine, avec
 **trois stratégies d'intelligence artificielle par jeu** (aléatoire, hybride,
 optimale) et un système de scores persistant.
