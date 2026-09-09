@@ -160,3 +160,45 @@ jobs:
         run: |
           docker run --rm jeux-console:${{ github.sha }} \
             python -c "import Menu, GestionScore, morpion, devinette, Allu, Existe; print('modules charges')"
+
+  sonar:
+    name: SonarQube Cloud
+    runs-on: ubuntu-latest
+    # L'analyse a besoin du rapport de couverture produit par les tests.
+    needs: tests
+
+    steps:
+      # Le job reste vert tant que le jeton n'a pas été enregistré dans les
+      # secrets du dépôt : l'analyse est simplement sautée.
+      - name: Vérifier la présence du jeton
+        id: jeton
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          if [ -n "$SONAR_TOKEN" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "SONAR_TOKEN absent : analyse SonarQube ignorée." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Récupérer le code
+        if: steps.jeton.outputs.present == 'true'
+        uses: actions/checkout@v7
+        with:
+          # Historique complet : Sonar s'en sert pour dater les problèmes
+          # et distinguer le code neuf du code hérité.
+          fetch-depth: 0
+
+      - name: Récupérer le rapport de couverture
+        if: steps.jeton.outputs.present == 'true'
+        uses: actions/download-artifact@v8
+        with:
+          name: rapport-couverture
+
+      - name: Analyser le projet
+        if: steps.jeton.outputs.present == 'true'
+        uses: SonarSource/sonarqube-scan-action@v8
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
