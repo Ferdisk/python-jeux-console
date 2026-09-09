@@ -80,6 +80,8 @@ def traitement_menu(j1: str, j2: str, Score_jeux: Score) -> None:
     quitter: bool
     choix_affichage_scores: int
     choix_jeu: int
+    mode: int
+    phrase: str
 
     quitter = False
 
@@ -92,20 +94,50 @@ def traitement_menu(j1: str, j2: str, Score_jeux: Score) -> None:
         # Vérification de la validité du choix   
         while choix != 1 and choix != 2 and choix != 3 and choix != 4 and choix != 5:
             choix = int(input(f"{bcolors.RED}Le nombre choisit doit être égal à 1, 2, 3, 4 ou 5{bcolors.RESET}\n"))
+        # Choix du mode de jeu
+        if choix != 5 and choix != 4: 
+            mode = int(input("Veuillez choisir un mode de jeu :\n" 
+                                "1 : humain contre humain \n"
+                                "2 : humain contre machine \n"
+                                "3 : machine contre machine\n\n"))
+            # Vérification de la validité du choix du mode de jeu 
+            while mode != 1 and mode != 2 and mode != 3:
+                mode = int(input("Le nombre choisit doit être égal à 1, 2 ou 3"))
+            if mode == 1:
+                phrase = "humain contre humain"
+            elif mode == 2:
+                phrase = "humain contre machine"
+            else:
+                phrase = "machine contre machine"
         # Lancement du jeu choisi ou affichage des scores ou quitter le menu 
         if choix != 5:
             # Lancement du jeu de l'allumette
             if choix == 1:
-                print(f"{bcolors.GREEN}Vous avez choisi le jeu de l'Allumette{bcolors.RESET}")
-                Allu.allumettes(j1, j2, Score_jeux)  
+                print(f"{bcolors.GREEN}Vous avez choisi le jeu de l'Allumette en mode {phrase}{bcolors.RESET}")
+                if mode == 1:
+                    Allu.allumettes_humain_vs_humain(j1, j2, Score_jeux)
+                elif mode == 2:
+                    Allu.allumettes_humain_vs_machine(j1, Score_jeux)  
+                else:
+                    Allu.allumettes_machine_vs_machine(Score_jeux)
             # Lancement du jeu de la devinette
             elif choix == 2:
-                print(f"{bcolors.GREEN}Vous avez choisi le jeu de la Devinette {bcolors.RESET}")
-                devinette.devinette(j1, j2, Score_jeux)
+                print(f"{bcolors.GREEN}Vous avez choisi le jeu de la Devinette en mode {phrase}{bcolors.RESET}")
+                if mode == 1:
+                    devinette.devinette_humain_humain(j1, j2, Score_jeux)
+                elif mode == 2:
+                    devinette.devinette_humain_machine(j1, Score_jeux)  
+                else:
+                    devinette.devinette_machine_machine()
             # Lancement du jeu du morpion  
             elif choix == 3:
-                print(f"{bcolors.GREEN}Vous avez choisi le jeu du Morpion {bcolors.RESET}")
-                morpion.morpion(j1, j2, Score_jeux)  
+                print(f"{bcolors.GREEN}Vous avez choisi le jeu du Morpion en mode {phrase}{bcolors.RESET}")
+                if mode == 1:
+                    morpion.morpion_humain_vs_humain(j1, j2, Score_jeux)
+                elif mode == 2:
+                    morpion.morpion_humain_vs_machine(j1, Score_jeux)
+                else:
+                    morpion.morpion_machine_vs_machine(Score_jeux)  
             # Affichage des scores 
             elif choix == 4:
                 print(f"{bcolors.GREEN}Vous avez choisi d'afficher les scores{bcolors.RESET}")

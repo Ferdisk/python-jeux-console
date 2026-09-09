@@ -1,4 +1,4 @@
-import Existe
+import Existe, math, random, time
 from typing import List
 
 class bcolors:
@@ -54,7 +54,7 @@ class Score:
     Morpion: Jeux
     Allumettes: Jeux
 
-
+deb = time.time()
 def afficher_grille(tab: List[List[str]]) -> None:
     """Procédure qui affiche la grille du morpion
 
@@ -118,8 +118,74 @@ def est_match_nul(tab: List[List[str]]) -> bool:
                 return False  # Il reste des cases vides, donc pas de match nul
     return True  # Aucune case vide, donc match nul
 
+def coup_machine_difficile(tab: List[List[str]], liste_symbole: list[str]) -> tuple[int, int]:
+    """Fonction qui retourne le meilleur coup pour la machine en mode difficile
 
-def morpion(j1: str, j2: str, Score_jeux: Score) -> None:
+    Args:
+        tab (List[List[str]]): une liste de listes de chaines de caractère
+        liste_symbole (list[str]): une liste de deux chaines de caractère représentant les symboles des joueurs
+
+    Returns:
+        tuple[int, int]: un tuple contenant les indices de la ligne et de la colonne du meilleur coup
+    """
+    meilleur_coup: tuple[int, int]
+    meilleur_score: float
+    score: float
+
+    meilleur_score = -math.inf
+    meilleur_coup = None
+    for i in range(3):
+        for j in range(3):
+            if tab[i][j] == " ":
+                tab[i][j] = liste_symbole[0]
+                score = minimax(tab, 0, False, liste_symbole)
+                tab[i][j] = " "
+                if score > meilleur_score:
+                    meilleur_score = score
+                    meilleur_coup = (i, j)
+    return meilleur_coup
+
+def minimax(tab: List[List[str]], profondeur: int, est_maximisant: bool, liste_symbole: list[str]) -> int:
+    """Fonction qui implémente l'algorithme minimax pour le jeu du morpion
+
+    Args:
+        tab (List[List[str]]): une liste de listes de chaines de caractère
+        profondeur (int):  #TODO: décrire ce paramètre
+        est_maximisant (bool): un booléen pour savoir si on maximise ou minimise le score
+        liste_symbole ([str, str]): une liste de deux chaines de caractère représentant les symboles des joueurs
+
+    Returns:
+        int: #TODO: décrire ce que retourne la fonction
+    """
+    if verifier_victoire(tab, liste_symbole[0]):
+        return 1
+    if verifier_victoire(tab, liste_symbole[1]):
+        return -1
+    if est_match_nul(tab):
+        return 0
+    
+    if est_maximisant:
+        meilleur_score = -math.inf
+        for i in range(3):
+            for j in range(3):
+                if tab[i][j] == " ":
+                    tab[i][j] = liste_symbole[0]
+                    score = minimax(tab, profondeur + 1, False, liste_symbole)
+                    tab[i][j] = " "
+                    meilleur_score = max(score, meilleur_score)
+        return meilleur_score
+    else:
+        meilleur_score = math.inf
+        for i in range(3):
+            for j in range(3):
+                if tab[i][j] == " ":
+                    tab[i][j] = liste_symbole[1]
+                    score = minimax(tab, profondeur + 1, True, liste_symbole)
+                    tab[i][j] = " "
+                    meilleur_score = min(score, meilleur_score)
+        return meilleur_score
+
+def morpion_humain_vs_humain(j1: str, j2: str, Score_jeux: Score) -> None:
     """Procédure qui éxécute le jeu du morpion
 
     Args:
@@ -222,3 +288,190 @@ def morpion(j1: str, j2: str, Score_jeux: Score) -> None:
         Score_jeux.Morpion.tab_score.append(joueur2)
     else:
         Score_jeux.Morpion.tab_score[existe[1]].score += joueur2.score
+
+def morpion_humain_vs_machine(j1: str, Score_jeux: Score) -> None:
+    """Procédure qui éxécute le jeu du morpion en mode humain contre la machine
+
+    Args:
+        j1 (str): nom du joueur 1
+        Score_jeux (Score): Objet de type Score qui contient les scores des joueurs
+    """
+    tab = [[" ", " ", " "] for _ in range(3)]
+    joueur = Joueur()
+    joueur.nom = j1
+    joueur.score = 0
+
+    liste_symbole = ["O", "X"]
+
+    # Choix du niveau de difficulté
+    difficulte = input("Choisissez le niveau de difficulté (1: Facile, 2: Moyen, 3: Difficile): ")
+    while difficulte not in ["1", "2", "3"]:
+        difficulte = input(f"{bcolors.RED}Veuillez choisir 1, 2 ou 3: {bcolors.RESET}")
+
+    jeu_termine = False
+    tour_joueur = True
+
+    while not jeu_termine:
+        afficher_grille(tab)
+        
+        if tour_joueur:
+            # Tour du joueur humain (code existant)
+            print(f"{bcolors.RED}Tour de {joueur.nom} (X) {bcolors.RESET}")
+            ligne = int(input("Choisissez une ligne (1, 2 ou 3) : ")) 
+            while ligne != 1 and ligne != 2 and ligne != 3:
+                ligne = int(input(f"{bcolors.RED}La ligne doit être égal à 1, 2 ou 3 : {bcolors.RESET}"))
+            ligne -= 1
+            colonne = int(input("Choisissez une colonne (1, 2 ou 3) : ")) 
+            while colonne != 1 and colonne != 2 and colonne != 3:
+                colonne = int(input(f"{bcolors.RED}La colonne doit être égal à 1, 2 ou 3 : {bcolors.RESET}"))
+            colonne -= 1
+            
+            if tab[ligne][colonne] == " ":
+                tab[ligne][colonne] = "X"
+                if verifier_victoire(tab, "X"):
+                    print(f"{bcolors.YELLOW}{joueur.nom} a gagné !{bcolors.RESET}")
+                    joueur.score += 1
+                    jeu_termine = True
+                elif est_match_nul(tab):
+                    print(f"{bcolors.GREEN}Match nul !{bcolors.RESET}")
+                    jeu_termine = True
+                tour_joueur = False
+            else:
+                print(f"{bcolors.RED}Case déjà prise, choisissez une autre case.{bcolors.RESET}")
+        else:
+            # Tour de la machine
+            print(f"{bcolors.RED}Tour de la machine (O) {bcolors.RESET}")
+            if difficulte == "1":
+                coup = coup_machine_facile(tab) 
+            elif difficulte == "2":
+                coup = coup_machine_moyen(tab, "O") 
+            else:
+                coup = coup_machine_difficile(tab, liste_symbole)
+            
+            tab[coup[0]][coup[1]] = "O"
+            if verifier_victoire(tab, "O"):
+                print(f"{bcolors.YELLOW}La machine a gagné !{bcolors.RESET}")
+                jeu_termine = True
+            elif est_match_nul(tab):
+                print(f"{bcolors.GREEN}Match nul !{bcolors.RESET}")
+                jeu_termine = True
+            tour_joueur = True
+
+    # Mise à jour du score
+    existe = Existe.Joueur_existe(j1, "Machine", Score_jeux, "Morpion")
+    if existe[0] == -1:
+        Score_jeux.Morpion.tab_score.append(joueur)
+    else:
+        Score_jeux.Morpion.tab_score[existe[0]].score += joueur.score
+
+def morpion_machine_vs_machine(Score_jeux: Score) -> None:
+    """Procédure qui éxécute le jeu du morpion en mode machine contre la machine
+
+    Args:
+        Score_jeux (Score): Objet de type Score qui contient les scores des joueurs
+    """
+    tab = [[" ", " ", " "] for _ in range(3)]
+    joueur1 = Joueur()
+    joueur1.nom = "Bot 1"
+    joueur1.score = 0
+    joueur2 = Joueur()
+    joueur2.nom = "Bot 2"
+    joueur2.score = 0
+
+    liste_symbole = ["X", "O"]
+
+    # Choix du niveau de difficulté
+    difficulte = input("Choisissez le niveau de difficulté (1: Facile, 2: Moyen, 3: Difficile): ")
+    while difficulte not in ["1", "2", "3"]:
+        difficulte = input(f"{bcolors.RED}Veuillez choisir 1, 2 ou 3: {bcolors.RESET}")
+
+    jeu_termine = False
+    joueur = "Bot 1"
+
+    while not jeu_termine:
+        afficher_grille(tab)
+        
+        # Tour de la machine
+        print(f"{bcolors.RED}Tour de {joueur} {liste_symbole[0]} {bcolors.RESET}")
+        if difficulte == "1":
+            coup = coup_machine_facile(tab) # TODO: Implémenter la fonction coup_machine_facile
+        elif difficulte == "2":
+            coup = coup_machine_moyen(tab, liste_symbole[0]) # TODO: Implémenter la fonction coup_machine_moyen
+        else:
+            coup = coup_machine_difficile(tab, liste_symbole)
+        
+        tab[coup[0]][coup[1]] = liste_symbole[0]
+        if verifier_victoire(tab, liste_symbole[0]):
+            print(f"{bcolors.YELLOW}La machine a gagné !{bcolors.RESET}")
+            jeu_termine = True
+        elif est_match_nul(tab):
+            print(f"{bcolors.GREEN}Match nul !{bcolors.RESET}")
+            jeu_termine = True
+        else:
+            joueur, liste_symbole = ("Bot 2", ["O", "X"]) if joueur == "Bot 1" else ("Bot 1", ["X", "O"])
+
+    # Mise à jour du score
+    existe = Existe.Joueur_existe(joueur1.nom, joueur2.nom, Score_jeux, "Morpion")
+    if existe[0] == -1:
+        Score_jeux.Morpion.tab_score.append(joueur1)
+    else:
+        Score_jeux.Morpion.tab_score[existe[0]].score += joueur1.score
+    if existe[1] == -1:
+        Score_jeux.Morpion.tab_score.append(joueur2)
+    else:
+        Score_jeux.Morpion.tab_score[existe[1]].score += joueur2.score
+
+def coup_machine_facile(tab: List[List[str]]) -> tuple[int, int]:
+    """
+    Fonction qui retourne un coup aléatoire pour la machine en mode facile.
+
+    Args:
+        tab (List[List[str]]): La grille du Morpion.
+
+    Returns:
+        Tuple[int, int]: Les coordonnées (ligne, colonne) du coup choisi.
+    """
+    cases_vides = [(i, j) for i in range(3) for j in range(3) if tab[i][j] == " "]
+    return random.choice(cases_vides)
+
+
+
+def coup_machine_moyen(tab: List[List[str]], symbole: str) -> tuple[int, int]:
+    """
+    Fonction qui retourne un coup pour la machine en mode moyen.
+    La machine essaie de gagner si possible, sinon essaie de bloquer le joueur humain, et sinon joue de manière aléatoire.
+
+    Args:
+        tab (List[List[str]]): La grille du Morpion.
+        symbole (str): Le symbole de la machine (O).
+
+    Returns:
+        Tuple[int, int]: Les coordonnées (ligne, colonne) du coup choisi.
+    """
+    # Vérifier si la machine peut gagner au prochain coup
+    for i in range(3):
+        for j in range(3):
+            if tab[i][j] == " ":  # Case vide
+                tab[i][j] = symbole  # Simuler le coup
+                if verifier_victoire(tab, symbole):  # Vérifier si la machine gagne
+                    tab[i][j] = " "  # Annuler le coup simulé
+                    return (i, j)
+                tab[i][j] = " "  # Annuler le coup simulé
+
+    # Vérifier si le joueur humain peut gagner au prochain coup et le bloquer
+    symbole_joueur = "X" if symbole == "O" else "O"
+    for i in range(3):
+        for j in range(3):
+            if tab[i][j] == " ":  # Case vide
+                tab[i][j] = symbole_joueur  # Simuler le coup du joueur
+                if verifier_victoire(tab, symbole_joueur):  # Vérifier si le joueur gagne
+                    tab[i][j] = " "  # Annuler le coup simulé
+                    return (i, j)  # Bloquer le joueur
+                tab[i][j] = " "  # Annuler le coup simulé
+
+    # Si aucun coup gagnant ou bloquant, jouer de manière aléatoire
+    return coup_machine_facile(tab)
+fin = time.time()
+print(f"Temps d'exécution : {fin - deb} secondes")
+
+

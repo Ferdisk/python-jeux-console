@@ -1,4 +1,4 @@
-import Existe, getpass
+import Existe, getpass, random
 
 class bcolors:
     """
@@ -54,7 +54,7 @@ class Score:
     Allumettes: Jeux
 
 
-def devinette(j1: str, j2: str, Score_jeux: Score) -> None:
+def devinette_humain_humain(j1: str, j2: str, Score_jeux: Score) -> None:
     """Procédure qui éxécute le jeu de la devinette
 
     Args:
@@ -154,3 +154,229 @@ def devinette(j1: str, j2: str, Score_jeux: Score) -> None:
         Score_jeux.Devinette.tab_score.append(joueur2)
     else:
         Score_jeux.Devinette.tab_score[existe[1]].score += joueur2.score
+
+
+def coup_facile(borne_inf: int, borne_sup: int) -> int:
+    """
+    Fonction qui retourne un coup aléatoire pour la machine en mode facile.
+
+    Args:
+        borne_inf (int): Borne inférieure de l'intervalle.
+        borne_sup (int): Borne supérieure de l'intervalle.
+
+    Returns:
+        int: Un nombre aléatoire entre borne_inf et borne_sup.
+    """
+    return random.randint(borne_inf, borne_sup)
+
+def coup_moyen(borne_inf: int, borne_sup: int) -> int:
+    """
+    Fonction qui retourne un coup pour la machine en mode moyen (recherche binaire).
+
+    Args:
+        borne_inf (int): Borne inférieure de l'intervalle.
+        borne_sup (int): Borne supérieure de l'intervalle.
+
+    Returns:
+        int: Le nombre au milieu de l'intervalle.
+    """
+    return (borne_inf + borne_sup) // 2
+
+def coup_difficile(borne_inf: int, borne_sup: int) -> int:
+    """
+    Fonction qui retourne un coup pour la machine en mode difficile (hybride).
+
+    Args:
+        borne_inf (int): Borne inférieure de l'intervalle.
+        borne_sup (int): Borne supérieure de l'intervalle.
+
+    Returns:
+        int: Un nombre choisi avec une stratégie hybride.
+    """
+    if random.random() < 0.80:  # 80% de chances d'utiliser la recherche binaire
+        return (borne_inf + borne_sup) // 2
+    else:  # 20% de chances de choisir un nombre aléatoire
+        return random.randint(borne_inf, borne_sup)
+
+
+def devinette_humain_machine(j1: str, Score_jeux: Score) -> None:
+    """
+    Procédure qui exécute le jeu de la devinette en mode humain contre machine.
+
+    Args:
+        j1 (str): Nom du joueur humain.
+        Score_jeux (Score): Objet de type Score qui contient les scores des joueurs.
+    """
+    limite: int
+    reponse: int
+    tour: int 
+    tour = 1
+    choix: int
+    trouver: bool 
+    trouver= False
+    test_regle: int
+    regle: str
+    j2: str 
+    j2= "Machine"
+    score_j1: int 
+    score_j1 = 0
+    score_j2: int 
+    score_j2 = 10
+    existe: list[int]
+    mode: int
+
+    # Vérification de l'existence des joueurs dans la liste des scores
+    existe = Existe.Joueur_existe(j1, j2, Score_jeux, "Devinette")
+
+    # Choix du mode de jeu
+    mode = int(input("Veuillez choisir un mode de jeu :\n"
+                     "1 : mode facile \n"
+                     "2 : mode moyen \n"
+                     "3 : mode difficile \n\n"))
+    
+    # Vérification de la validité du choix du mode de jeu
+    while mode != 1 and mode != 2 and mode != 3:
+        mode = int(input("Le nombre choisi doit être égal à 1, 2 ou 3 : "))
+
+    # Règles du jeu de la devinette
+    regle = (f"{bcolors.MAGENTA}Le joueur 1 (humain) choisit un nombre entre 1 et une limite. "
+             f"La machine doit deviner ce nombre : à chacune de ses propositions, le joueur répond 'trop petit', "
+             f"'trop grand', ou 'c'est gagné'.{bcolors.RESET}\n")
+
+    # Demande si le joueur a besoin des règles du jeu
+    test_regle = int(input("Avez-vous besoin des règles du jeu, répondez positivement par 1 sinon 2:\n"))
+    while test_regle != 1 and test_regle != 2:
+        test_regle = int(input("Vous devez répondre positivement par 1 sinon 2 : \n"))
+
+    # Affichage des règles du jeu si besoin
+    if test_regle == 1:
+        print(regle)
+
+    # Demande de la limite du nombre à deviner
+    limite = int(input(f"{bcolors.YELLOW}Joueur 1 {j1}{bcolors.RESET} : Veuillez choisir la limite : \n"))
+    while limite <= 1:
+        limite = int(input(f"{bcolors.RED}Votre limite doit être un nombre positif strictement supérieur à 1 : \n{bcolors.RESET}"))
+
+    # Le joueur humain choisit un nombre à deviner
+    reponse = int(getpass.getpass(f"{bcolors.GREEN}Joueur 1 {j1}{bcolors.RESET} : Choisissez le nombre à deviner (entre 1 et {limite}) : \n"))
+    while reponse < 1 or reponse > limite:
+        print(f"{bcolors.RED}Vous devez choisir un nombre entre 1 et {limite}{bcolors.RESET}")
+        reponse = int(getpass.getpass(f"{bcolors.GREEN}Joueur 1 {j1}{bcolors.RESET} : Choisissez le nombre à deviner : \n"))
+
+    # Initialisation des bornes pour la recherche binaire
+    borne_inf: int 
+    borne_inf = 1
+    borne_sup: int 
+    borne_sup = limite
+
+    # Boucle principale du jeu
+    while not trouver:
+        print(f"{bcolors.GREEN}Tour {tour} : Machine {j2} essaie de deviner.{bcolors.RESET}")
+
+        # La machine choisit un coup en fonction de la difficulté
+        if mode == 1:
+            choix = coup_facile(borne_inf, borne_sup)
+        elif mode == 2:
+            choix = coup_moyen(borne_inf, borne_sup)
+        else:  # mode difficile
+            choix = coup_difficile(borne_inf, borne_sup)
+
+        print(f"La machine propose : {choix}")
+
+        if choix < reponse:
+            print(f"{bcolors.RED}Trop petit{bcolors.RESET}\n")
+            borne_inf = choix + 1  # On met à jour la borne inférieure
+            score_j1 += 1
+            score_j2 -= 1
+        elif choix > reponse:
+            print(f"{bcolors.RED}Trop grand{bcolors.RESET}\n")
+            borne_sup = choix - 1  # On met à jour la borne supérieure
+            score_j1 += 1
+            score_j2 -= 1
+        else:
+            print(f"{bcolors.YELLOW}C'est gagné ! Le nombre était {reponse}.{bcolors.RESET}")
+            print(f"{bcolors.GREEN}Score final : {j1} a {score_j1} points, {j2} a {score_j2} points.{bcolors.RESET}")
+            trouver = True
+
+        tour += 1
+
+    # Mise à jour des scores dans Score_jeux
+    joueur1 = Joueur()
+    joueur2 = Joueur()
+    joueur1.nom = j1
+    joueur2.nom = j2
+    joueur1.score = score_j1
+    joueur2.score = score_j2
+
+    if existe[0] == -1:
+        Score_jeux.Devinette.tab_score.append(joueur1)
+    else:
+        Score_jeux.Devinette.tab_score[existe[0]].score += joueur1.score
+
+    if existe[1] == -1:
+        Score_jeux.Devinette.tab_score.append(joueur2)
+    else:
+        Score_jeux.Devinette.tab_score[existe[1]].score += joueur2.score
+
+def devinette_machine_machine() -> None:
+    """
+    Procédure qui exécute le jeu de la devinette en mode machine contre machine.
+    """
+    limite: int
+    reponse: int
+    tour: int = 1
+    choix: int
+    trouver: bool 
+    trouver = False
+    mode: int
+
+    # Choix du mode de jeu
+    mode = int(input("Veuillez choisir un mode de jeu :\n"
+                     "1 : mode facile \n"
+                     "2 : mode moyen \n"
+                     "3 : mode difficile \n\n"))
+    
+    # Vérification de la validité du choix du mode de jeu
+    while mode != 1 and mode != 2 and mode != 3:
+        mode = int(input("Le nombre choisi doit être égal à 1, 2 ou 3 : "))
+
+    # La Machine 1 choisit une limite aléatoire
+    limite = random.randint(10, 100)
+    print(f"{bcolors.YELLOW}Machine 1 a choisi une limite de {limite}.{bcolors.RESET}")
+
+    # La Machine 1 choisit un nombre aléatoire entre 1 et la limite
+    reponse = random.randint(1, limite)
+    print(f"{bcolors.YELLOW}Machine 1 a choisi un nombre entre 1 et {limite}.{bcolors.RESET}")
+
+    # Initialisation des bornes pour la recherche binaire
+    borne_inf: int 
+    borne_inf = 1
+    borne_sup: int 
+    borne_sup = limite
+
+    # Boucle principale du jeu
+    while not trouver:
+        print(f"{bcolors.GREEN}Tour {tour} : Machine 2 essaie de deviner.{bcolors.RESET}")
+
+        # La machine choisit un coup en fonction de la difficulté
+        if mode == 1:
+            choix = coup_facile(borne_inf, borne_sup)
+        elif mode == 2:
+            choix = coup_moyen(borne_inf, borne_sup)
+        else:  # mode difficile
+            choix = coup_difficile(borne_inf, borne_sup)
+
+        print(f"Machine 2 propose : {choix}")
+
+        if choix < reponse:
+            print(f"{bcolors.RED}Trop petit{bcolors.RESET}\n")
+            borne_inf = choix + 1  # On met à jour la borne inférieure
+        elif choix > reponse:
+            print(f"{bcolors.RED}Trop grand{bcolors.RESET}\n")
+            borne_sup = choix - 1  # On met à jour la borne supérieure
+        else:
+            print(f"{bcolors.YELLOW}C'est gagné ! Le nombre était {reponse}.{bcolors.RESET}")
+            print(f"{bcolors.GREEN}Machine 2 a trouvé le nombre en {tour} tentatives.{bcolors.RESET}")
+            trouver = True
+
+        tour += 1
