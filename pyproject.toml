@@ -1,0 +1,6 @@
+[tool.pytest.ini_options]
+# Les modules du projet sont à plat à la racine (pas de paquet) :
+# on ajoute la racine au chemin d'import plutôt que de restructurer le projet.
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-v"

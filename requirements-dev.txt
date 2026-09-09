@@ -1,0 +1,5 @@
+# Outils de la chaîne d'intégration continue.
+# Chaque outil est commenté avec l'étape du cours à laquelle il répond.
+
+# Tests unitaires
+pytest==8.3.4
