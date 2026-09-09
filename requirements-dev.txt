@@ -19,4 +19,4 @@ black==26.5.1
 
 # Sécurité : analyse du code (SAST) et des dépendances
 bandit==1.9.4
-pip-audit==2.9.0
+pip-audit==2.10.1
