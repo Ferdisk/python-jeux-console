@@ -73,6 +73,36 @@ de 224 à 477.
 | `GestionScore.py` | Chargement et sauvegarde des scores |
 | `Existe.py` | Recherche d'un joueur dans les scores enregistrés |
 
+## Chaîne d'intégration continue
+
+Chaque `push` déclenche quatre jobs, dont trois s'exécutent dans un conteneur
+Docker `python:3.11-slim` :
+
+| Job | Outils | Ce qu'il vérifie |
+|---|---|---|
+| **Tests unitaires** | pytest, pytest-cov | 40 tests sur la logique des jeux, avec mesure de couverture |
+| **Analyse statique** | Ruff, Flake8, Pylint, Black | Erreurs réelles (bloquant), puis comparatif chiffré des quatre analyseurs |
+| **Sécurité** | Bandit, pip-audit | Motifs dangereux dans le code, vulnérabilités connues des dépendances (bloquant) |
+| **Image Docker** | Docker | L'image se construit et démarre |
+
+À chaque tag `v*`, une [Release](../../releases) est publiée automatiquement
+avec une archive téléchargeable.
+
+### Jouer avec Docker
+
+```bash
+docker build -t jeux-console .
+docker run --rm -it jeux-console
+```
+
+### Lancer les vérifications en local
+
+```bash
+pip install -r requirements-dev.txt
+pytest --cov=.
+bash .github/scripts/comparatif-analyseurs.sh
+```
+
 ---
 
 Projet réalisé en première année de BUT Informatique (SAÉ 1.01 puis 1.02),

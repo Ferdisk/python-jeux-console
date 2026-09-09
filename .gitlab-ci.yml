@@ -1,0 +1,52 @@
+# Équivalent GitLab CI du pipeline GitHub Actions (.github/workflows/ci.yml).
+#
+# Ce fichier n'est pas exécuté : le projet est hébergé sur GitHub. Il est
+# présent pour le comparatif de plateformes du rapport R5.A.07, le cours
+# présentant GitLab CI tandis que ce projet utilise GitHub Actions.
+#
+# Différences principales relevées en le transposant :
+#
+#   - GitLab impose une image par job (`image:`) ; c'est le comportement par
+#     défaut, là où GitHub Actions exécute sur une VM Ubuntu et où le
+#     conteneur doit être demandé explicitement avec `container:`.
+#   - GitLab structure le pipeline en `stages` ordonnés ; GitHub Actions
+#     exécute tous les jobs en parallèle sauf dépendance déclarée (`needs`).
+#   - Les artefacts et rapports (couverture, tests) sont typés nativement
+#     chez GitLab (`artifacts:reports:`) ; chez GitHub il faut passer par
+#     une action tierce ou par le résumé d'exécution.
+#   - GitLab n'a pas d'équivalent direct de la place de marché d'actions
+#     réutilisables : chaque étape est un script shell.
+
+stages:
+  - test
+  - qualite
+  - securite
+
+default:
+  image: python:3.11-slim
+  before_script:
+    - pip install --no-cache-dir -q -r requirements-dev.txt
+
+tests:
+  stage: test
+  script:
+    - python -m compileall -q .
+    - pytest --cov=. --cov-report=term --cov-report=xml
+  coverage: '/^TOTAL.+?(\d+\%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+
+analyse_statique:
+  stage: qualite
+  script:
+    - ruff check --select E9,F63,F7,F82 --output-format=concise .
+    - bash .github/scripts/comparatif-analyseurs.sh
+
+securite:
+  stage: securite
+  script:
+    - bandit -r Allu.py devinette.py morpion.py Menu.py Principal.py GestionScore.py Existe.py --exit-zero
+    - pip-audit -r requirements-dev.txt
