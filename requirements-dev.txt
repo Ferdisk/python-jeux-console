@@ -1,18 +1,22 @@
 # Outils de la chaîne d'intégration continue.
-# Chaque outil est commenté avec l'étape du cours à laquelle il répond.
+# Chaque outil correspond à une étape attendue par le cours R5.A.07.
+#
+# Les versions sont épinglées pour que le pipeline soit reproductible.
+# pip-audit vérifie à chaque exécution qu'aucune n'est vulnérable, et
+# Dependabot ouvre une pull request dès qu'une correction paraît.
 
 # Tests unitaires
-pytest==8.3.4
+pytest==9.1.1
 
 # Couverture de code
-pytest-cov==6.0.0
+pytest-cov==7.1.0
 
 # Analyse statique et style (comparatif du rapport R5.A.07)
-pylint==3.3.3
-flake8==7.1.1
-ruff==0.8.6
-black==24.10.0
+pylint==4.0.8
+flake8==7.3.0
+ruff==0.16.6
+black==26.5.1
 
 # Sécurité : analyse du code (SAST) et des dépendances
-bandit==1.8.0
-pip-audit==2.7.3
+bandit==1.9.4
+pip-audit==2.9.0

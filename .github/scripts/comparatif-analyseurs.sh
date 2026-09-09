@@ -25,6 +25,14 @@ mesurer() {
     printf '%s|%s' "$(duree "$debut" "$fin")" "$nb"
 }
 
+# Préchauffage : le premier outil lancé paie le coût de démarrage de
+# l'interpréteur et la construction des caches. Sans cette passe blanche,
+# il apparaîtrait artificiellement plus lent que les suivants.
+echo "Préchauffage des outils..." >&2
+for outil in "ruff check" "flake8" "pylint --score=n" "black --check"; do
+    $outil Existe.py >/dev/null 2>&1 || true
+done
+
 echo "Comparatif des analyseurs statiques" >&2
 
 # Ruff n'active qu'un petit jeu de règles par défaut (E4, E7, E9, F).
@@ -45,6 +53,8 @@ ligne() {
     echo "## Comparatif des analyseurs statiques"
     echo
     echo "Même périmètre (7 fichiers) et même longueur de ligne (120) pour tous."
+    echo "Chaque outil est préchauffé avant mesure, pour ne pas imputer au premier"
+    echo "lancé le coût de démarrage de l'interpréteur."
     echo
     echo "| Outil | Durée | Remarques | Rôle |"
     echo "|---|---|---|---|"

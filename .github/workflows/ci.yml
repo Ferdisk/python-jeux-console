@@ -122,14 +122,22 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # Analyse des dépendances : compare les versions installées à une base
-      # de vulnérabilités connues.
+      # Analyse des dépendances : compare les versions épinglées à une base
+      # de vulnérabilités connues. Cette étape est bloquante — contrairement
+      # aux remarques de style, une dépendance vulnérable est un fait objectif
+      # qui doit arrêter la chaîne.
       - name: pip-audit — vulnérabilités des dépendances
+        # `shell: bash` active pipefail : sans cela, l'échec de pip-audit
+        # serait masqué par le succès de `tee` en bout de tube.
+        shell: bash
+        run: pip-audit -r requirements-dev.txt | tee audit.txt
+
+      - name: Publier le résultat de l'audit
         if: always()
         run: |
           {
             echo "## pip-audit — vulnérabilités des dépendances"
             echo '```'
-            pip-audit -r requirements-dev.txt || true
+            cat audit.txt 2>/dev/null || echo "audit interrompu"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
