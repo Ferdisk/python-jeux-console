@@ -5,7 +5,7 @@
 pytest==8.3.4
 
 # Couverture de code
-pytest-cov==6.0.0
+pytest-cov==7.1.0
 
 # Analyse statique et style (comparatif du rapport R5.A.07)
 pylint==3.3.3
