@@ -1,0 +1,22 @@
+# Dependabot — surveillance automatique des dépendances.
+#
+# C'est l'alternative « native GitHub » à pip-audit : au lieu d'analyser les
+# dépendances pendant le pipeline, Dependabot ouvre de lui-même une pull
+# request quand une version corrigée paraît. Les deux sont complémentaires,
+# le comparatif est détaillé dans le rapport.
+
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "chore"
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "ci"

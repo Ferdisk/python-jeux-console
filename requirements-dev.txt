@@ -12,3 +12,7 @@ pylint==3.3.3
 flake8==7.1.1
 ruff==0.8.6
 black==24.10.0
+
+# Sécurité : analyse du code (SAST) et des dépendances
+bandit==1.8.0
+pip-audit==2.7.3

@@ -91,3 +91,45 @@ jobs:
       - name: Détail des remarques Pylint
         if: always()
         run: pylint --output-format=colorized --exit-zero Allu.py devinette.py morpion.py Menu.py Principal.py GestionScore.py Existe.py
+
+  securite:
+    name: Sécurité (code et dépendances)
+    runs-on: ubuntu-latest
+    container: python:3.11-slim
+
+    steps:
+      - name: Installer git dans le conteneur
+        run: apt-get update -qq && apt-get install -y -qq git
+
+      - name: Récupérer le code
+        uses: actions/checkout@v7
+
+      - name: Installer les outils de sécurité
+        run: pip install --no-cache-dir -q -r requirements-dev.txt
+
+      # SAST : analyse du code source à la recherche de motifs dangereux.
+      # Non bloquant : sur ce projet les remarques portent sur pickle et
+      # random, qu'il faut interpréter plutôt que corriger aveuglément.
+      - name: Bandit — analyse du code
+        if: always()
+        run: |
+          bandit -r Allu.py devinette.py morpion.py Menu.py Principal.py GestionScore.py Existe.py \
+                 -f txt -o bandit.txt --exit-zero
+          {
+            echo "## Bandit — analyse statique de sécurité"
+            echo '```'
+            tail -20 bandit.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Analyse des dépendances : compare les versions installées à une base
+      # de vulnérabilités connues.
+      - name: pip-audit — vulnérabilités des dépendances
+        if: always()
+        run: |
+          {
+            echo "## pip-audit — vulnérabilités des dépendances"
+            echo '```'
+            pip-audit -r requirements-dev.txt || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
