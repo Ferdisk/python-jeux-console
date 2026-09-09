@@ -1,6 +1,8 @@
 # Jeux console en Python — Allumettes, Devinette, Morpion
 
 [![CI](https://github.com/Ferdisk/python-jeux-console/actions/workflows/ci.yml/badge.svg)](https://github.com/Ferdisk/python-jeux-console/actions/workflows/ci.yml)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=Ferdisk_python-jeux-console&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Ferdisk_python-jeux-console)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Ferdisk_python-jeux-console&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Ferdisk_python-jeux-console)
 
 Trois jeux en ligne de commande, jouables à deux ou contre la machine, avec
 **trois stratégies d'intelligence artificielle par jeu** (aléatoire, hybride,
@@ -75,7 +77,7 @@ de 224 à 477.
 
 ## Chaîne d'intégration continue
 
-Chaque `push` déclenche quatre jobs, dont trois s'exécutent dans un conteneur
+Chaque `push` déclenche cinq jobs, dont trois s'exécutent dans un conteneur
 Docker `python:3.11-slim` :
 
 | Job | Outils | Ce qu'il vérifie |
@@ -83,7 +85,8 @@ Docker `python:3.11-slim` :
 | **Tests unitaires** | pytest, pytest-cov | 40 tests sur la logique des jeux, avec mesure de couverture |
 | **Analyse statique** | Ruff, Flake8, Pylint, Black | Erreurs réelles (bloquant), puis comparatif chiffré des quatre analyseurs |
 | **Sécurité** | Bandit, pip-audit | Motifs dangereux dans le code, vulnérabilités connues des dépendances (bloquant) |
-| **Image Docker** | Docker | L'image se construit et démarre |
+| **Image Docker** | Docker | L'image se construit, démarre, et ne tourne pas en root |
+| **SonarQube Cloud** | SonarQube | Analyse de qualité et de sécurité, avec remontée de la couverture |
 
 À chaque tag `v*`, une [Release](../../releases) est publiée automatiquement
 avec une archive téléchargeable.
