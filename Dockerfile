@@ -17,4 +17,13 @@ COPY Principal.py Menu.py Allu.py devinette.py morpion.py GestionScore.py Existe
 # de les conserver d'une partie à l'autre.
 VOLUME ["/app/data"]
 
+# SonarQube (règle docker:S6471) signale qu'un conteneur exécuté en root
+# donne à l'application tous les droits sur le système du conteneur. On crée
+# donc un utilisateur sans privilèges, propriétaire du répertoire de travail
+# pour que la sauvegarde des scores reste possible.
+RUN useradd --create-home --uid 1000 joueur \
+    && mkdir -p /app/data \
+    && chown -R joueur:joueur /app
+USER joueur
+
 CMD ["python", "Principal.py"]

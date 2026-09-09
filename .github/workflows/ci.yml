@@ -164,6 +164,13 @@ jobs:
           docker run --rm jeux-console:${{ github.sha }} \
             python -c "import Menu, GestionScore, morpion, devinette, Allu, Existe; print('modules charges')"
 
+      # Vérifie la correction apportée suite à la règle docker:S6471 de Sonar.
+      - name: Vérifier que le conteneur ne tourne pas en root
+        run: |
+          utilisateur=$(docker run --rm jeux-console:${{ github.sha }} whoami)
+          echo "Utilisateur du conteneur : $utilisateur"
+          test "$utilisateur" != "root"
+
   sonar:
     name: SonarQube Cloud
     runs-on: ubuntu-latest
