@@ -14,7 +14,7 @@ pytest-cov==7.1.0
 # Analyse statique et style (comparatif du rapport R5.A.07)
 pylint==4.0.8
 flake8==7.3.0
-ruff==0.16.6
+ruff==0.16.8
 black==26.5.1
 
 # Sécurité : analyse du code (SAST) et des dépendances
