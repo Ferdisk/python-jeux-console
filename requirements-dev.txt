@@ -15,7 +15,7 @@ pytest-cov==7.1.0
 pylint==4.0.8
 flake8==7.3.0
 ruff==0.16.6
-black==26.5.1
+black==26.10.1
 
 # Sécurité : analyse du code (SAST) et des dépendances
 bandit==1.9.4
